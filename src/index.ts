@@ -2,20 +2,28 @@ import 'reflect-metadata'
 import './db/init'
 
 import socketIO, { Socket } from 'socket.io'
-import { createServer } from 'http'
+import { createServer as createInsecure } from 'http'
+import { createServer as createSecure } from 'https'
 import { Device } from './db/device'
 import { RPCHost } from './rpc/host'
 import { RPCListDevices } from './rpc/api'
-import express from 'express'
-import { argv } from 'yargs'
+import { argv } from './cli'
+import express from './http'
+import { readFileSync } from 'fs'
 
-const app = express()
+function createServer () {
+  if (argv.https) {
+    const options = {
+      key: readFileSync(argv.key!),
+      cert: readFileSync(argv.cert!)
+    }
+    return createSecure(options, express)
+  } else {
+    return createInsecure(express)
+  }
+}
 
-app.get('/', (_req, res) => {
-  res.redirect('https://github.com/zhangzisu/windowsd-server')
-})
-
-const server = createServer(app)
+const server = createServer()
 const io = socketIO(server)
 
 const idMap = new Map<string, string>()
@@ -83,11 +91,6 @@ io.on('connection', (socket) => {
   })
 })
 
-const port = parseInt((process.env.PORT || argv.port || '3000') as string, 10)
-if (isNaN(port)) {
-  throw new Error('Bad port')
-}
-
-server.listen(port, '::', () => {
-  console.log('Server started at ' + port)
+server.listen(argv.port, '::', () => {
+  console.log('Server started at ' + argv.port)
 })

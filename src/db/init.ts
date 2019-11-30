@@ -1,21 +1,16 @@
 import { createConnection } from 'typeorm'
 import { User } from './user'
 import { Device } from './device'
-import { argv } from 'yargs'
+import { argv } from '../cli'
 
-const type = (argv.dbType || 'mysql') as 'mysql'
-const database = (argv.db || 'test') as string
-const username = (argv.dbUser || 'test') as string
-const password = (argv.dbPass || 'password') as string
-
-console.log('Database Type : ' + type)
-console.log('Database      : ' + database)
+console.log('Database Type : ' + argv.dbType)
+console.log('Database      : ' + argv.db)
 
 createConnection({
-  type,
-  database,
-  username,
-  password,
+  type: argv.dbType as 'mysql',
+  database: argv.db,
+  username: argv.dbUser,
+  password: argv.dbPass,
   entities: [User, Device],
   synchronize: true
 }).then(() => {
