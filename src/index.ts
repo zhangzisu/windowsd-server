@@ -88,6 +88,6 @@ if (isNaN(port)) {
   throw new Error('Bad port')
 }
 
-server.listen(port, () => {
+server.listen(port, '::', () => {
   console.log('Server started at ' + port)
 })
