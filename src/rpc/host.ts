@@ -5,13 +5,13 @@ interface RPCRequest {
   a?: any // Arguments
 }
 
-interface RPCReply {
+interface RPCResponse {
   u: string // UUID
   r?: any
   e?: any
 }
 
-type RPCCallback = (deviceID: string, reply: RPCReply) => void
+type RPCCallback = (deviceID: string, reply: RPCResponse) => void
 type RPCFunction = (deviceID: string, arg?: any) => any
 
 export class RPCHost {
