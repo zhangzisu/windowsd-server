@@ -6,8 +6,16 @@ import { createServer } from 'http'
 import { Device } from './db/device'
 import { RPCHost } from './rpc/host'
 import { RPCListDevices } from './rpc/api'
+import express from 'express'
+import { argv } from 'yargs'
 
-const server = createServer()
+const app = express()
+
+app.get('/', (_req, res) => {
+  res.redirect('https://github.com/zhangzisu/windowsd-server')
+})
+
+const server = createServer(app)
 const io = socketIO(server)
 
 const idMap = new Map<string, string>()
@@ -75,6 +83,11 @@ io.on('connection', (socket) => {
   })
 })
 
-server.listen(3000, () => {
-  console.log('Server started')
+const port = parseInt((process.env.PORT || argv.port || '3000') as string, 10)
+if (isNaN(port)) {
+  throw new Error('Bad port')
+}
+
+server.listen(port, () => {
+  console.log('Server started at ' + port)
 })
