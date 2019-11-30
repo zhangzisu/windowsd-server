@@ -1,12 +1,12 @@
 
 interface RPCRequest {
-  n: string // RPC Call name
-  d: string // A Async UUID for this RPC call
+  m: string // RPC Call name
+  u: string // A Async UUID for this RPC call
   a?: any // Arguments
 }
 
 interface RPCReply {
-  d: string // UUID
+  u: string // UUID
   r?: any
   e?: any
 }
@@ -31,15 +31,15 @@ export class RPCHost {
   }
 
   invoke (deviceID: string, req: RPCRequest) {
-    if (!this.fns.has(req.n)) {
-      return this.cb(deviceID, { d: req.d, e: 'No such method' })
+    if (!this.fns.has(req.m)) {
+      return this.cb(deviceID, { u: req.u, e: 'No such method' })
     }
-    Promise.resolve(this.fns.get(req.n)!(deviceID, req.a))
+    Promise.resolve(this.fns.get(req.m)!(deviceID, req.a))
       .then((r: any) => {
-        this.cb(deviceID, { d: req.d, r })
+        this.cb(deviceID, { u: req.u, r })
       })
       .catch(e => {
-        this.cb(deviceID, { d: req.d, e: e.toString() })
+        this.cb(deviceID, { u: req.u, e: e.toString() })
       })
   }
 }

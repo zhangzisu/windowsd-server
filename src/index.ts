@@ -59,7 +59,13 @@ io.on('connection', (socket) => {
   socket.on('p2p-rpc', (args) => {
     const dst = idMap.get(args.t)
     if (!dst) {
-      socket.emit('p2p-rpc', { t: deviceID, m: 1, e: 'Target offline' })
+      if (args.hasOwnProperty!('m')) {
+        // Request
+        socket.emit('p2p-rpc', { t: deviceID, e: 'Target offline', u: args.u })
+      } else {
+        // Response
+        console.log('Missed P2P response: ' + args.u)
+      }
     } else {
       io.to(dst).emit('p2p-rpc', args)
     }
