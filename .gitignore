@@ -65,3 +65,6 @@ build/
 
 # Sqlite3 databases
 *.db
+
+# Certs
+*.pem
