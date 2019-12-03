@@ -1,45 +1,72 @@
+import { sendRPC } from '../io'
+import uuid from 'uuid/v4'
 
-interface RPCRequest {
-  m: string // RPC Call name
-  u: string // A Async UUID for this RPC call
-  a?: any // Arguments
+interface IRPCFnContext {
+  deviceID?: string
 }
 
-interface RPCResponse {
-  u: string // UUID
-  r?: any
-  e?: any
+type RPCCallback = (result: any, error?: Error) => void
+type RPCFunction = (args: any, context: IRPCFnContext) => any
+
+const fns: Map<string, RPCFunction> = new Map()
+const cbs: Map<string, RPCCallback> = new Map()
+
+export function register (name: string, fn: RPCFunction) {
+  if (fns.has(name)) {
+    throw new Error('Mutiple registeration')
+  }
+  fns.set(name, fn)
+  console.log('RPC', `+Function ${name}`)
 }
 
-type RPCCallback = (deviceID: string, reply: RPCResponse) => void
-type RPCFunction = (deviceID: string, arg?: any) => any
-
-export class RPCHost {
-  fns: Map<string, RPCFunction>
-  cb: RPCCallback
-
-  constructor (cb: RPCCallback) {
-    this.fns = new Map()
-    this.cb = cb
-  }
-
-  register (name: string, fn: RPCFunction) {
-    if (this.fns.has(name)) {
-      throw new Error('Mutiple registeration')
+export async function handle (deviceID: string, msg: any) {
+  if (msg instanceof Array) {
+    if (msg.length === 4) {
+      // Request
+      const [asyncID, method, args, cfg] = msg
+      return remoteInvoke(asyncID, method, args, cfg, deviceID)
+    } else if (msg.length === 3) {
+      // Response
+      const [asyncID, result, errstr] = msg
+      const cb = cbs.get(asyncID)
+      if (!cb) {
+        console.log(`Missed response: ${asyncID}`)
+        return
+      }
+      if (typeof errstr === 'string') cb(result, new Error(errstr))
+      return cb(result)
     }
-    this.fns.set(name, fn)
   }
+}
 
-  invoke (deviceID: string, req: RPCRequest) {
-    if (!this.fns.has(req.m)) {
-      return this.cb(deviceID, { u: req.u, e: 'No such method' })
-    }
-    Promise.resolve(this.fns.get(req.m)!(deviceID, req.a))
-      .then((r: any) => {
-        this.cb(deviceID, { u: req.u, r })
-      })
-      .catch(e => {
-        this.cb(deviceID, { u: req.u, e: e.toString() })
-      })
+function remoteInvoke (asyncID: string, method: string, args: any, cfg: any, deviceID: string) {
+  let promise: Promise<any>
+  if (typeof cfg.targetID === 'string') {
+    promise = invokeClient(cfg.targetID, method, args, {})
+  } else {
+    promise = new Promise((resolve, reject) => {
+      const fn = fns.get(method)
+      if (!fn) return reject(new Error('No such method'))
+      return resolve(fn(args, { deviceID }))
+    })
   }
+  promise.then(result => {
+    sendRPC(deviceID, [asyncID, result, null])
+  }).catch(error => {
+    sendRPC(deviceID, [asyncID, null, error.toString()])
+  })
+}
+
+export function invokeClient (targetID: string, method: string, args: any, cfg: any) {
+  return new Promise((resolve, reject) => {
+    const asyncID = uuid()
+    cbs.set(asyncID, (result, error) => {
+      cbs.delete(asyncID)
+      if (error) return reject(error)
+      return resolve(result)
+    })
+    if (!sendRPC(targetID, [asyncID, method, args, cfg])) {
+      cbs.get(asyncID)!(null, new Error('Target offline'))
+    }
+  })
 }
