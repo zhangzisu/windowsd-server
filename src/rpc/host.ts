@@ -41,8 +41,8 @@ export async function handle (deviceID: string, msg: any) {
 
 function remoteInvoke (asyncID: string, method: string, args: any, cfg: any, deviceID: string) {
   let promise: Promise<any>
-  if (typeof cfg.targetID === 'string') {
-    promise = invokeClient(cfg.targetID, method, args, {})
+  if (typeof cfg.target === 'string') {
+    promise = invokeClient(cfg.target, method, args, {})
   } else {
     promise = new Promise((resolve, reject) => {
       const fn = fns.get(method)
