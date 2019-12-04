@@ -24,22 +24,16 @@ export async function handle (deviceID: string, msg: any) {
     if (msg.length === 4) {
       // Request
       const [asyncID, method, args, cfg] = msg
-      return remoteInvoke(asyncID, method, args, cfg, deviceID)
+      return handleRequest(asyncID, method, args, cfg, deviceID)
     } else if (msg.length === 3) {
       // Response
       const [asyncID, result, errstr] = msg
-      const cb = cbs.get(asyncID)
-      if (!cb) {
-        console.log(`Missed response: ${asyncID}`)
-        return
-      }
-      if (typeof errstr === 'string') cb(result, new Error(errstr))
-      return cb(result)
+      return handleResponse(asyncID, result, errstr)
     }
   }
 }
 
-function remoteInvoke (asyncID: string, method: string, args: any, cfg: any, deviceID: string) {
+function handleRequest (asyncID: string, method: string, args: any, cfg: any, deviceID: string) {
   let promise: Promise<any>
   if (typeof cfg.target === 'string') {
     promise = invokeClient(cfg.target, method, args, {})
@@ -55,6 +49,16 @@ function remoteInvoke (asyncID: string, method: string, args: any, cfg: any, dev
   }).catch(error => {
     sendRPC(deviceID, [asyncID, null, error.toString()])
   })
+}
+
+function handleResponse (asyncID: string, result: any, errstr: any) {
+  const cb = cbs.get(asyncID)
+  if (!cb) {
+    console.log(`Missed response: ${asyncID}`)
+    return
+  }
+  if (typeof errstr === 'string') cb(result, new Error(errstr))
+  return cb(result)
 }
 
 export function invokeClient (targetID: string, method: string, args: any, cfg: any) {
