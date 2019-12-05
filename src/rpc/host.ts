@@ -57,7 +57,7 @@ function handleResponse (asyncID: string, result: any, errstr: any) {
     console.log(`Missed response: ${asyncID}`)
     return
   }
-  if (typeof errstr === 'string') cb(result, new Error(errstr))
+  if (typeof errstr === 'string') return cb(result, new Error(errstr))
   return cb(result)
 }
 
