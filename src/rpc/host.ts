@@ -6,7 +6,7 @@ interface IRPCFnContext {
 }
 
 type RPCCallback = (result: any, error?: Error) => void
-type RPCFunction = (args: any, context: IRPCFnContext) => any
+type RPCFunction = (args: any, context: IRPCFnContext) => Promise<any>
 
 const fns: Map<string, RPCFunction> = new Map()
 const cbs: Map<string, RPCCallback> = new Map()
