@@ -37,8 +37,9 @@ io.use(async (socket, cb) => {
 io.on('connection', (socket) => {
   const { userID, deviceID } = metaMap.get(socket)!
   socket.join(userID)
-  socket.to(userID).emit('update', { deviceID })
+  socket.to(userID).emit('update', { deviceID, event: 'online' })
   socket.on('disconnect', () => {
+    socket.to(userID).emit('update', { deviceID, event: 'offline' })
     idMap.delete(deviceID)
   })
   socket.on('rpc', (msg) => {
