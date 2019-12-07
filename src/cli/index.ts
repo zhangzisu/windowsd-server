@@ -8,7 +8,7 @@ export const argv = yargs
     type: 'number'
   })
   .option('db', {
-    default: 'test',
+    default: 'main.db',
     type: 'string'
   })
   .option('dbUser', {
@@ -20,7 +20,7 @@ export const argv = yargs
     type: 'string'
   })
   .option('dbType', {
-    default: 'mysql',
+    default: 'sqlite',
     demandOption: true,
     type: 'string'
   })

@@ -1,5 +1,6 @@
 import { sendRPC } from '../io'
 import uuid from 'uuid/v4'
+import { Device } from '../db/device'
 
 interface IRPCFnContext {
   deviceID?: string
@@ -33,7 +34,12 @@ export async function handle (deviceID: string, msg: any) {
   }
 }
 
-function handleRequest (asyncID: string, method: string, args: any, cfg: any, deviceID: string) {
+async function handleRequest (asyncID: string, method: string, args: any, cfg: any, deviceID: string) {
+  const device = await Device.findOne(deviceID)
+  if (!device || !device.allowRPC) {
+    sendRPC(deviceID, [asyncID, null, 'Access denied'])
+    return
+  }
   let promise: Promise<any>
   if (typeof cfg.target === 'string') {
     promise = invokeClient(cfg.target, method, args, {})
