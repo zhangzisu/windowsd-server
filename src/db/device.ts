@@ -6,7 +6,7 @@ export class Device extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string
 
-  @Column()
+  @Column({ default: false })
   allowRPC!: boolean
 
   @ManyToOne(() => User, user => user.devices)
