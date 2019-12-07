@@ -1,4 +1,4 @@
-import { sendRPC } from '../io'
+import { sendRPC, idMap } from '../io'
 import uuid from 'uuid/v4'
 import { Device } from '../db/device'
 
@@ -6,7 +6,7 @@ interface IRPCFnContext {
   deviceID?: string
 }
 
-type RPCCallback = (result: any, error?: Error) => void
+export type RPCCallback = (result: any, error?: Error) => void
 type RPCFunction = (args: any, context: IRPCFnContext) => Promise<any>
 
 const fns: Map<string, RPCFunction> = new Map()
@@ -70,14 +70,14 @@ function handleResponse (asyncID: string, result: any, errstr: any) {
 export function invokeClient (targetID: string, method: string, args: any, cfg: any) {
   return new Promise((resolve, reject) => {
     const asyncID = uuid()
-    setTimeout(() => {
-      cbs.has(asyncID) && cbs.get(asyncID)!(null, new Error('Timeout'))
-    }, 5000)
-    cbs.set(asyncID, (result, error) => {
+    const cb: RPCCallback = (result, error) => {
       cbs.delete(asyncID)
+      idMap.get(targetID)!.attachedCbs.delete(cb)
       if (error) return reject(error)
       return resolve(result)
-    })
+    }
+    cbs.set(asyncID, cb)
+    idMap.get(targetID)!.attachedCbs.add(cb)
     if (!sendRPC(targetID, [asyncID, method, args, cfg])) {
       cbs.get(asyncID)!(null, new Error('Target offline'))
     }

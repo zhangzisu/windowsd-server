@@ -1,11 +1,16 @@
 import socketIO, { Socket } from 'socket.io'
 import { Device } from '../db/device'
 import { server } from '../http'
-import { handle } from '../rpc/host'
+import { handle, RPCCallback } from '../rpc/host'
 
 export const io = socketIO(server)
 
-const idMap = new Map<string, string>()
+interface DeviceMeta {
+  socketID: string
+  attachedCbs: Set<RPCCallback>
+}
+
+export const idMap = new Map<string, DeviceMeta>()
 
 interface SocketMeta {
   deviceID: string
@@ -24,7 +29,7 @@ io.use(async (socket, cb) => {
       if (idMap.has(deviceID)) {
         cb(new Error('Bad Device'))
       } else {
-        idMap.set(deviceID, socket.id)
+        idMap.set(deviceID, { socketID: socket.id, attachedCbs: new Set() })
         metaMap.set(socket, { deviceID, userID: device.user.id })
         cb()
       }
@@ -40,6 +45,10 @@ io.on('connection', (socket) => {
   socket.to(userID).emit('update', { deviceID, event: 'online' })
   socket.on('disconnect', () => {
     socket.to(userID).emit('update', { deviceID, event: 'offline' })
+    const meta = idMap.get(deviceID)
+    for (const cb of meta!.attachedCbs) {
+      cb(null, new Error('Client offline'))
+    }
     idMap.delete(deviceID)
   })
   socket.on('rpc', (msg) => {
@@ -51,9 +60,9 @@ io.on('connection', (socket) => {
 })
 
 export function sendRPC (deviceID: string, msg: any) {
-  const id = idMap.get(deviceID)
-  if (!id) return false
-  io.to(id).emit('rpc', msg)
+  const meta = idMap.get(deviceID)
+  if (!meta) return false
+  io.to(meta.socketID).emit('rpc', msg)
   return true
 }
 
