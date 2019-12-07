@@ -70,6 +70,9 @@ function handleResponse (asyncID: string, result: any, errstr: any) {
 export function invokeClient (targetID: string, method: string, args: any, cfg: any) {
   return new Promise((resolve, reject) => {
     const asyncID = uuid()
+    setTimeout(() => {
+      cbs.has(asyncID) && cbs.get(asyncID)!(null, new Error('Timeout'))
+    }, 5000)
     cbs.set(asyncID, (result, error) => {
       cbs.delete(asyncID)
       if (error) return reject(error)
