@@ -1,4 +1,4 @@
-import { sendRPC, idMap } from '../io'
+import { sendRPC, getAttachedCbs } from '../io'
 import uuid from 'uuid/v4'
 import { Device } from '../db/device'
 
@@ -42,7 +42,7 @@ async function handleRequest (asyncID: string, method: string, args: any, cfg: a
   }
   let promise: Promise<any>
   if (typeof cfg.target === 'string') {
-    promise = invokeClient(cfg.target, method, args, {})
+    promise = invokeClient(cfg.target, method, args, { deviceID })
   } else {
     promise = new Promise((resolve, reject) => {
       const fn = fns.get(method)
@@ -68,16 +68,17 @@ function handleResponse (asyncID: string, result: any, errstr: any) {
 }
 
 export function invokeClient (targetID: string, method: string, args: any, cfg: any) {
+  const sourceID = <string>cfg.deviceID
   return new Promise((resolve, reject) => {
     const asyncID = uuid()
     const cb: RPCCallback = (result, error) => {
       cbs.delete(asyncID)
-      idMap.get(targetID)!.attachedCbs.delete(cb)
+      getAttachedCbs(sourceID).delete(cb)
       if (error) return reject(error)
       return resolve(result)
     }
     cbs.set(asyncID, cb)
-    idMap.get(targetID)!.attachedCbs.add(cb)
+    getAttachedCbs(sourceID).add(cb)
     if (!sendRPC(targetID, [asyncID, method, args, cfg])) {
       cbs.get(asyncID)!(null, new Error('Target offline'))
     }

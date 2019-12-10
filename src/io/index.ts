@@ -4,17 +4,12 @@ import { server } from '../http'
 import { handle, RPCCallback } from '../rpc/host'
 
 export const io = socketIO(server)
-
-interface DeviceMeta {
-  socketID: string
-  attachedCbs: Set<RPCCallback>
-}
-
-export const idMap = new Map<string, DeviceMeta>()
+const idMap = new Map<string, Socket>()
 
 interface SocketMeta {
   deviceID: string
   userID: string
+  attachedCbs: Set<RPCCallback>
 }
 
 const metaMap = new WeakMap<Socket, SocketMeta>()
@@ -29,8 +24,8 @@ io.use(async (socket, cb) => {
       if (idMap.has(deviceID)) {
         cb(new Error('Bad Device'))
       } else {
-        idMap.set(deviceID, { socketID: socket.id, attachedCbs: new Set() })
-        metaMap.set(socket, { deviceID, userID: device.user.id })
+        idMap.set(deviceID, socket)
+        metaMap.set(socket, { deviceID, userID: device.user.id, attachedCbs: new Set() })
         cb()
       }
     } else {
@@ -42,11 +37,11 @@ io.use(async (socket, cb) => {
 io.on('connection', (socket) => {
   const { userID, deviceID } = metaMap.get(socket)!
   socket.join(userID)
-  socket.to(userID).emit('update', { deviceID, event: 'online' })
+  socket.to(userID).emit('system', { deviceID, event: 'online' })
   socket.on('disconnect', () => {
-    socket.to(userID).emit('update', { deviceID, event: 'offline' })
-    const meta = idMap.get(deviceID)
-    for (const cb of meta!.attachedCbs) {
+    socket.to(userID).emit('system', { deviceID, event: 'offline' })
+    const cbs = metaMap.get(socket)!.attachedCbs
+    for (const cb of cbs) {
       cb(null, new Error('Client offline'))
     }
     idMap.delete(deviceID)
@@ -59,10 +54,14 @@ io.on('connection', (socket) => {
   })
 })
 
+export function getAttachedCbs (deviceID: string) {
+  return metaMap.get(idMap.get(deviceID)!)!.attachedCbs
+}
+
 export function sendRPC (deviceID: string, msg: any) {
-  const meta = idMap.get(deviceID)
-  if (!meta) return false
-  io.to(meta.socketID).emit('rpc', msg)
+  const socket = idMap.get(deviceID)
+  if (!socket) return false
+  socket.emit('rpc', msg)
   return true
 }
 
