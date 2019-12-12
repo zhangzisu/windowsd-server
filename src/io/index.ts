@@ -17,19 +17,20 @@ const metaMap = new WeakMap<Socket, SocketMeta>()
 io.use(async (socket, cb) => {
   const deviceID = socket.handshake.query.deviceID
   if (typeof deviceID !== 'string') {
-    cb(new Error('Bad Header'))
+    return cb(new Error('Bad Header'))
   } else {
+    if (metaMap.has(socket)) return cb()
     const device = await Device.findOne(deviceID, { relations: ['user'] })
     if (device) {
       if (idMap.has(deviceID)) {
-        cb(new Error('Bad Device'))
+        return cb(new Error('Bad Device'))
       } else {
         idMap.set(deviceID, socket)
         metaMap.set(socket, { deviceID, userID: device.user.id, attachedCbs: new Set() })
-        cb()
+        return cb()
       }
     } else {
-      cb(new Error('Bad Device'))
+      return cb(new Error('Bad Device'))
     }
   }
 })
