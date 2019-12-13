@@ -1,6 +1,7 @@
 import { sendRPC, getAttachedCbs } from '../io'
 import uuid from 'uuid/v4'
 import { Device } from '../db/device'
+import { createError } from '../shared/error'
 
 interface IRPCFnContext {
   deviceID?: string
@@ -63,7 +64,7 @@ function handleResponse (asyncID: string, result: any, errstr: any) {
     console.log(`Missed response: ${asyncID}`)
     return
   }
-  if (typeof errstr === 'string') return cb(result, new Error(errstr))
+  if (typeof errstr === 'string') return cb(result, createError(errstr))
   return cb(result)
 }
 
