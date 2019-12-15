@@ -3,8 +3,8 @@ import { User } from './user'
 import { Device } from './device'
 import { argv } from '../cli'
 
-console.log('Database Type : ' + argv.dbType)
-console.log('Database      : ' + argv.db)
+console.log('Database Type : ' + argv.databaseType)
+console.log('Database      : ' + argv.databaseUrl)
 
 createConnection({
   type: <any>argv.databaseType,
