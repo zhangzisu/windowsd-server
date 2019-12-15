@@ -7,10 +7,8 @@ console.log('Database Type : ' + argv.dbType)
 console.log('Database      : ' + argv.db)
 
 createConnection({
-  type: argv.dbType as 'mysql',
-  database: argv.db,
-  username: argv.dbUser,
-  password: argv.dbPass,
+  type: <any>argv.databaseType,
+  url: argv.databaseUrl,
   entities: [User, Device],
   synchronize: true
 }).then(() => {

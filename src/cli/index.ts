@@ -1,26 +1,19 @@
 import yargs from 'yargs'
 
 export const argv = yargs
+  .env('')
   .option('port', {
     alias: 'p',
     default: 3000,
     demandOption: true,
     type: 'number'
   })
-  .option('db', {
-    default: 'main.db',
+  .option('databaseUrl', {
+    demandOption: true,
     type: 'string'
   })
-  .option('dbUser', {
-    default: 'test',
-    type: 'string'
-  })
-  .option('dbPass', {
-    default: 'password',
-    type: 'string'
-  })
-  .option('dbType', {
-    default: 'sqlite',
+  .option('databaseType', {
+    default: 'postgres',
     demandOption: true,
     type: 'string'
   })

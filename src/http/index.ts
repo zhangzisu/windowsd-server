@@ -3,11 +3,12 @@ import { createServer as createInsecure } from 'http'
 import { createServer as createSecure } from 'https'
 import { readFileSync } from 'fs'
 import { argv } from '../cli'
+import { packageJson } from '../shared/package'
 
 const app = express()
 
 app.get('/', (_req, res) => {
-  res.redirect('https://github.com/zhangzisu/windowsd-server')
+  res.json(packageJson)
 })
 
 function createServer () {
