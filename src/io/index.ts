@@ -23,12 +23,13 @@ io.use(async (socket, cb) => {
     const device = await Device.findOne(deviceID, { relations: ['user'] })
     if (device) {
       if (idMap.has(deviceID)) {
-        return cb(new Error('Bad Device'))
-      } else {
-        idMap.set(deviceID, socket)
-        metaMap.set(socket, { deviceID, userID: device.user.id, attachedCbs: new Set() })
-        return cb()
+        const old = idMap.get(deviceID)!
+        old.error(new Error('Bad Device'))
+        old.disconnect(true)
       }
+      idMap.set(deviceID, socket)
+      metaMap.set(socket, { deviceID, userID: device.user.id, attachedCbs: new Set() })
+      return cb()
     } else {
       return cb(new Error('Bad Device'))
     }
