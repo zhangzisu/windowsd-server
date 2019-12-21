@@ -15,24 +15,28 @@ interface SocketMeta {
 const metaMap = new WeakMap<Socket, SocketMeta>()
 
 io.use(async (socket, cb) => {
-  const deviceID = socket.handshake.query.deviceID
-  if (typeof deviceID !== 'string') {
-    return cb(new Error('Bad Header'))
-  } else {
-    if (metaMap.has(socket)) return cb()
-    const device = await Device.findOne(deviceID, { relations: ['user'] })
-    if (device) {
-      if (idMap.has(deviceID)) {
-        const old = idMap.get(deviceID)!
-        old.error(new Error('Bad Device'))
-        old.disconnect(true)
-      }
-      idMap.set(deviceID, socket)
-      metaMap.set(socket, { deviceID, userID: device.user.id, attachedCbs: new Set() })
-      return cb()
-    } else {
-      return cb(new Error('Bad Device'))
+  try {
+    const deviceID = socket.handshake.query.deviceID
+    const token = socket.handshake.query.token
+    if (typeof deviceID !== 'string' || typeof token !== 'string') {
+      throw new Error('Bad Device')
     }
+    const device = await Device.findOneOrFail(deviceID, { relations: ['user'], select: ['id', 'token'] })
+    if (device.token) {
+      if (device.token !== token) throw new Error('Bad Device')
+    } else {
+      device.token = token
+      await device.save()
+    }
+    if (idMap.has(deviceID)) {
+      const old = idMap.get(deviceID)!
+      old.error(new Error('Bad Device'))
+    }
+    idMap.set(deviceID, socket)
+    metaMap.set(socket, { deviceID, userID: device.user.id, attachedCbs: new Set() })
+    cb()
+  } catch (e) {
+    cb(e)
   }
 })
 

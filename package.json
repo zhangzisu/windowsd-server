@@ -25,7 +25,7 @@
     "express": "^4.17.1",
     "reflect-metadata": "^0.1.13",
     "socket.io": "^2.3.0",
-    "typeorm": "^0.2.20",
+    "typeorm": "^0.2.21",
     "uuid": "^3.3.3",
     "yargs": "^15.0.2"
   },

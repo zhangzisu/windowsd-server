@@ -10,3 +10,7 @@ body {
   background-repeat: no-repeat;
   background-size: cover;
 }
+
+.table {
+  background-color: rgba(255, 255, 255, 0.7);
+}

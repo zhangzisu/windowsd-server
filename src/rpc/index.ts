@@ -14,6 +14,7 @@ interface IRPCConfig {
 
 export type RPCCallback = (error: Error | undefined, result: any) => void
 type RPCFunction = (args: any, context: IRPCConfig) => Promise<any>
+type RPCFunctionEx = (context: IRPCConfig, ...args: any) => Promise<any>
 
 const fns: Map<string, RPCFunction> = new Map()
 const cbs: Map<string, RPCCallback> = new Map()
@@ -24,6 +25,16 @@ export function register (name: string, fn: RPCFunction) {
   }
   fns.set(name, fn)
   console.log('RPC', `+Function ${name}`)
+}
+
+export function registerEx (name: string, fn: RPCFunctionEx) {
+  register(name, async (args, ctx) => {
+    if (args instanceof Array) {
+      return fn(ctx, ...args)
+    } else if (args === undefined || args === null) {
+      return fn(ctx)
+    } else throw new Error('Bad args')
+  })
 }
 
 export async function handle (deviceID: string, msg: any) {
@@ -42,7 +53,7 @@ export async function handle (deviceID: string, msg: any) {
 
 async function handleRequest (asyncID: string, method: string, args: any, cfg: IRPCConfig, deviceID: string) {
   const device = await Device.findOne(deviceID)
-  if (!device || !device.allowRPC) {
+  if (!device || !device.rpc) {
     sendRPC(deviceID, [asyncID, null, 'Access denied'])
     return
   }
