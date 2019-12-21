@@ -64,6 +64,10 @@ export function getAttachedCbs (deviceID: string) {
   return metaMap.get(idMap.get(deviceID)!)!.attachedCbs
 }
 
+export function isOnline (deviceID:string) {
+  return idMap.has(deviceID)
+}
+
 export function sendRPC (deviceID: string, msg: any) {
   const socket = idMap.get(deviceID)
   if (!socket) return false

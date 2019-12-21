@@ -1,4 +1,4 @@
-import { sendRPC, getAttachedCbs } from '../io'
+import { sendRPC, getAttachedCbs, isOnline } from '../io'
 import uuid from 'uuid/v4'
 import { Device } from '../db/device'
 import { createError } from '../shared/error'
@@ -80,6 +80,7 @@ async function invokeClient (method: string, args: any, cfg: IRPCConfig) {
   if (typeof target !== 'string') throw new Error('Fail: No target')
   const timeout = cfg.o || defaultTimeout
   if (typeof timeout !== 'number' || !Number.isInteger(timeout) || timeout > maxTimeout) throw new Error('Invalid timeout')
+  if (!isOnline(target)) throw new Error('Target offline')
 
   return new Promise((resolve, reject) => {
     const asyncID = uuid()
