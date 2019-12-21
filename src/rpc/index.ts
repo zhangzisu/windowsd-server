@@ -85,7 +85,7 @@ async function invokeClient (method: string, args: any, cfg: IRPCConfig) {
     const asyncID = uuid()
 
     let cbCalled = false
-    const cb: RPCCallback = (result, error) => {
+    const cb: RPCCallback = (error, result) => {
       if (cbCalled) return
       cbCalled = true
       cbs.delete(asyncID)
