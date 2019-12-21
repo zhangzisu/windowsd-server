@@ -14,8 +14,9 @@ if (existsSync(build)) {
 console.log('~ $ tsc')
 execSync('tsc', { cwd: root, stdio: 'inherit' })
 
-console.log('frontend $ yarn')
-execSync('yarn', { cwd: frontend, stdio: 'inherit' })
+console.log('frontend $ yarn --production=false')
+execSync('yarn --production=false', { cwd: frontend, stdio: 'inherit' })
+
 console.log('frontend $ yarn build')
 execSync('yarn build', { cwd: frontend, stdio: 'inherit' })
 
