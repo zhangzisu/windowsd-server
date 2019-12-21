@@ -2,6 +2,7 @@ import 'reflect-metadata'
 import './db'
 import './io'
 import './rpc'
+import './api'
 
 import { server } from './http'
 import { argv } from './cli'

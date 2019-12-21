@@ -8,8 +8,11 @@ export const argv = yargs
     demandOption: true,
     type: 'number'
   })
+  .option('database', {
+    default: 'main.db',
+    type: 'string'
+  })
   .option('databaseUrl', {
-    demandOption: true,
     type: 'string'
   })
   .option('databaseType', {

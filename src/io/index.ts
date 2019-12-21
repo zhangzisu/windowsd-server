@@ -1,7 +1,7 @@
 import socketIO, { Socket } from 'socket.io'
 import { Device } from '../db/device'
 import { server } from '../http'
-import { handle, RPCCallback } from '../rpc/host'
+import { handle, RPCCallback } from '../rpc'
 
 export const io = socketIO(server)
 const idMap = new Map<string, Socket>()
@@ -44,7 +44,7 @@ io.on('connection', (socket) => {
     socket.to(userID).emit('system', { deviceID, event: 'offline' })
     const cbs = metaMap.get(socket)!.attachedCbs
     for (const cb of cbs) {
-      cb(null, new Error('Client offline'))
+      cb(new Error('Client offline'), null)
     }
     idMap.delete(deviceID)
   })

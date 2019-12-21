@@ -3,7 +3,6 @@
     "incremental": true,
     "target": "esnext",
     "module": "commonjs",
-    "lib": [],
     "sourceMap": true,
     "outDir": "build/",
     "strict": true,

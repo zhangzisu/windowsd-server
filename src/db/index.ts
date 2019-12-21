@@ -3,15 +3,19 @@ import { User } from './user'
 import { Device } from './device'
 import { argv } from '../cli'
 
-console.log('Database Type : ' + argv.databaseType)
-console.log('Database      : ' + argv.databaseUrl)
-
-createConnection({
-  type: <any>argv.databaseType,
-  url: argv.databaseUrl,
+const connectOptions: any = {
+  type: <never>argv.databaseType,
   entities: [User, Device],
   synchronize: true
-}).then(() => {
+}
+
+if (argv.databaseUrl) {
+  connectOptions.url = argv.databaseUrl
+} else {
+  connectOptions.database = argv.database
+}
+
+createConnection(connectOptions).then(() => {
   console.log('Database connected')
 }).catch((err: any) => {
   console.error(err)
