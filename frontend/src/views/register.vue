@@ -41,7 +41,7 @@ export default {
         const { id } = await JSONPost('/api/register', { name: this.username, pass: this.password })
         await connect(id, this.password)
         this.$buefy.toast.open({
-          duration: 5000,
+          duration: 1000,
           message: 'OK',
           position: 'is-bottom',
           type: 'is-success'
@@ -49,7 +49,7 @@ export default {
         this.$router.push('/manage')
       } catch (e) {
         this.$buefy.toast.open({
-          duration: 5000,
+          duration: 1000,
           message: 'Something wrong...',
           position: 'is-bottom',
           type: 'is-danger'

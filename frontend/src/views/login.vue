@@ -41,7 +41,7 @@ export default {
         const { id } = await JSONPost('/api/finduser', { name: this.username })
         await connect(id, this.password)
         this.$buefy.toast.open({
-          duration: 5000,
+          duration: 1000,
           message: 'OK',
           position: 'is-bottom',
           type: 'is-success'
@@ -50,7 +50,7 @@ export default {
       } catch (e) {
         console.log(e)
         this.$buefy.toast.open({
-          duration: 5000,
+          duration: 1000,
           message: e.message || e,
           position: 'is-bottom',
           type: 'is-danger'

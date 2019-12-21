@@ -1,16 +1,14 @@
-import express from 'express'
+import express, { static as S } from 'express'
 import { createServer as createInsecure } from 'http'
 import { createServer as createSecure } from 'https'
 import { readFileSync } from 'fs'
 import { argv } from '../cli'
-import { packageJson } from '../shared/package'
 import { apiRouter } from '../api/http'
+import { join } from 'path'
 
 const app = express()
 
-app.get('/', (_req, res) => {
-  res.json(packageJson)
-})
+app.use(S(join(__dirname, '..', '..', 'frontend', 'dist')))
 
 app.use('/api', apiRouter)
 
