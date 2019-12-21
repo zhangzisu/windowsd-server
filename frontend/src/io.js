@@ -10,13 +10,15 @@ const cbs = new Map()
 /** @type{SocketIOClient.Socket} */
 let conn
 
+const ioURL = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : '/'
+
 /**
  * @param {string} deviceID
  * @param {string} token
  */
 export function connect (deviceID, token) {
   conn && conn.close()
-  conn = io('http://localhost:3000', { query: { deviceID, token } })
+  conn = io(ioURL, { query: { deviceID, token } })
   conn.on('system', (...msg) => {
     bus.$emit('system', ...msg)
   })

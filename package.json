@@ -38,9 +38,15 @@
     "wds": "bin/index.js"
   },
   "scripts": {
-    "prepare": "tsc"
+    "prepare": "node scripts/prepare.js"
   },
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "files": [
+    "bin",
+    "build",
+    "frontend",
+    "scripts"
+  ]
 }
