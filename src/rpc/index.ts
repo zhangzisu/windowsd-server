@@ -13,8 +13,8 @@ interface IRPCConfig {
 }
 
 export type RPCCallback = (error: Error | undefined, result: any) => void
-type RPCFunction = (args: any, context: IRPCConfig) => Promise<any>
-type RPCFunctionEx = (context: IRPCConfig, ...args: any) => Promise<any>
+type RPCFunction = (args: any, cfg: IRPCConfig) => Promise<any>
+type RPCFunctionEx = (cfg: IRPCConfig, ...args: any) => Promise<any>
 
 const fns: Map<string, RPCFunction> = new Map()
 const cbs: Map<string, RPCCallback> = new Map()
