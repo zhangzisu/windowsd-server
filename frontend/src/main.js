@@ -1,8 +1,14 @@
 import Vue from 'vue'
-import App from './App.vue'
-import router from './router'
+import Buefy from 'buefy'
+import App from '@/app.vue'
+import router from '@/router'
+
+import '@mdi/font/css/materialdesignicons.css'
+import 'vue-fluent/dist/vue-fluent.min.css'
+import '@/styles/main.css'
 
 Vue.config.productionTip = false
+Vue.use(Buefy)
 
 new Vue({
   router,
