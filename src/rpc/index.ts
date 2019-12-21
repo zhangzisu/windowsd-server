@@ -98,11 +98,11 @@ async function invokeClient (method: string, args: any, cfg: IRPCConfig) {
     getAttachedCbs(target).add(cb)
 
     if (!sendRPC(target, [asyncID, method, args, cfg])) {
-      return cb(undefined, new Error('Target offline'))
+      return cb(new Error('Target offline'), undefined)
     }
 
     if (timeout > 0) {
-      setTimeout(cb, timeout)
+      setTimeout(cb, timeout, new Error('Timeout'))
     }
   })
 }
