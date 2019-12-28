@@ -6,7 +6,23 @@
         <b-button :loading="loading" @click="listDevices">Load device list</b-button>
       </p>
       <p>
-        <b-table :data="devices" :columns="deviceProps" />
+        <b-table :data="devices" :bordered="true">
+          <template slot-scope="props">
+            <b-table-column field="id" label="ID">
+              {{ props.row.id }}
+            </b-table-column>
+            <b-table-column field="rpc" label="Allow RPC">
+              {{ props.row.rpc }}
+            </b-table-column>
+            <b-table-column field="admin" label="Allow Admin">
+              {{ props.row.admin }}
+            </b-table-column>
+            <b-table-column label="Actions" centered>
+              <b-button size="is-small" type="is-danger" @click="remove(props.row.id)">Remove</b-button>
+              <b-button size="is-small" type="is-warning" @click="revoke(props.row.id)">Revoke</b-button>
+            </b-table-column>
+          </template>
+        </b-table>
       </p>
       <h2>Add device</h2>
       <p>
@@ -33,17 +49,15 @@ export default {
   name: 'Manage',
   data: () => ({
     devices: [],
-    deviceProps: [
-      { field: 'id', label: 'ID' },
-      { field: 'rpc', label: 'RPC' },
-      { field: 'admin', label: 'Admin' }
-    ],
     loading: false,
     addOpt: {
       rpc: false,
       admin: false
     }
   }),
+  mounted () {
+    this.listDevices()
+  },
   methods: {
     async listDevices () {
       try {
@@ -68,6 +82,40 @@ export default {
         await this.listDevices()
       } catch (e) {
         //
+      } finally {
+        this.loading = false
+      }
+    },
+    async remove (device) {
+      try {
+        this.loading = true
+        await invoke('remove_device', [device], {})
+        this.$buefy.toast.open({
+          duration: 1000,
+          message: 'OK',
+          position: 'is-bottom',
+          type: 'is-success'
+        })
+        await this.listDevices()
+      } catch (e) {
+        console.log(e)
+      } finally {
+        this.loading = false
+      }
+    },
+    async revoke (device) {
+      try {
+        this.loading = true
+        await invoke('revoke_device', [device], {})
+        this.$buefy.toast.open({
+          duration: 1000,
+          message: 'OK',
+          position: 'is-bottom',
+          type: 'is-success'
+        })
+        await this.listDevices()
+      } catch (e) {
+        console.log(e)
       } finally {
         this.loading = false
       }

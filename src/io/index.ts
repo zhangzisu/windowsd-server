@@ -28,10 +28,7 @@ io.use(async (socket, cb) => {
       device.token = token
       await device.save()
     }
-    if (idMap.has(deviceID)) {
-      const old = idMap.get(deviceID)!
-      old.error(new Error('Bad Device'))
-    }
+    disconnect(deviceID)
     idMap.set(deviceID, socket)
     metaMap.set(socket, { deviceID, userID: device.user.id, attachedCbs: new Set() })
     cb()
@@ -59,6 +56,13 @@ io.on('connection', (socket) => {
       })
   })
 })
+
+export function disconnect (deviceID: string) {
+  const old = idMap.get(deviceID)
+  if (!old) return
+  old.error(new Error('Bad Device'))
+  old.disconnect(true)
+}
 
 export function getAttachedCbs (deviceID: string) {
   return metaMap.get(idMap.get(deviceID)!)!.attachedCbs
